@@ -1,0 +1,7 @@
+Attapoll_Paypal_Image
+
+單純紀錄從Attapoll賺取現金的紀錄 順便練習SHLL+HTML圖片顯示
+
+PS.
+因為有人提醒害怕是否為詐騙集團在洗錢 詐騙PAYPAL帳號變成替罪羊
+每次比對提領和入帳金額 有異常金額就要報警備案
