@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <title>靜態載入圖片清單</title>
+  <style>
+    body { font-family: sans-serif; margin:0; }
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 10px;
+      padding: 10px;
+    }
+    .gallery img {
+      width: 100%;
+      height: auto;
+      border-radius: 8px;
+      object-fit: cover;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    .gallery img:hover {
+      transform: scale(1.05);
+    }
+
+    /* 放大圖全螢幕樣式 */
+    .lightbox {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      display: none;
+      justify-content: center;
+      align-items: center;
+      background: rgba(0,0,0,0.8);
+      z-index: 9999;
+    }
+    .lightbox img {
+      max-width: 90%;
+      max-height: 90%;
+      border-radius: 10px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.7);
+    }
+  </style>
+</head>
+<body>
+  <h1 style="padding:10px">圖片清單展示</h1>
+  <div class="gallery" id="gallery"></div>
+
+  <!-- 放大圖容器 -->
+  <div class="lightbox" id="lightbox">
+    <img id="lightbox-img" src="" alt="">
+  </div>
+
+  <script>
+    // 你的檔案清單
+    const files = [
+		"515590.jpg",
+		"515601_0.jpg",
+		"515605_0.jpg",
+		"515603_0.jpg",
+		"515602_0.jpg",
+		"515604_0.jpg",
+    ];
+
+    const gallery = document.getElementById("gallery");
+    const lightbox = document.getElementById("lightbox");
+    const lightboxImg = document.getElementById("lightbox-img");
+
+    // 建立縮圖
+    files.forEach(file => {
+      const img = document.createElement("img");
+      img.src = file;   // 假設圖片與 HTML 在同一資料夾
+      img.alt = file;
+      img.addEventListener("click", () => {
+        lightboxImg.src = file;
+        lightbox.style.display = "flex";
+      });
+      gallery.appendChild(img);
+    });
+
+    // 點擊放大圖時，關閉 lightbox
+    lightbox.addEventListener("click", () => {
+      lightbox.style.display = "none";
+      lightboxImg.src = "";
+    });
+  </script>
+</body>
+</html>

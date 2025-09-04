@@ -1,0 +1,6 @@
+"screencapture-google-search-2025-09-04-11_03_10.png",
+"screencapture-play-google-store-apps-details-2025-09-04-11_27_15.png",
+"screencapture-play-google-store-apps-details-2025-09-04-11_38_53.png",
+"IMAGES.html",
+"list.sh",
+"list.txt",

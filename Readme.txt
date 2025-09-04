@@ -1,5 +1,7 @@
 Attapoll_Paypal_Image
 
+APP:https://play.google.com/store/apps/details?id=com.requapp.requ&hl=zh_TW
+
 單純紀錄從Attapoll賺取現金的紀錄 順便練習SHLL+HTML圖片顯示
 
 PS.

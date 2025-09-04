@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <title>靜態載入圖片清單</title>
+  <style>
+    body { font-family: sans-serif; margin:0; }
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 10px;
+      padding: 10px;
+    }
+    .gallery img {
+      width: 100%;
+      height: auto;
+      border-radius: 8px;
+      object-fit: cover;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    .gallery img:hover {
+      transform: scale(1.05);
+    }
+
+    /* 放大圖全螢幕樣式 */
+    .lightbox {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      display: none;
+      justify-content: center;
+      align-items: center;
+      background: rgba(0,0,0,0.8);
+      z-index: 9999;
+      overflow: hidden;
+    }
+    .lightbox img {
+      max-width: 90%;
+      max-height: 90%;
+      border-radius: 10px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.7);
+      transition: transform 0.2s;
+      cursor: zoom-in;
+    }
+  </style>
+</head>
+<body>
+  <h1 style="padding:10px">圖片清單展示</h1>
+  <div class="gallery" id="gallery"></div>
+
+  <!-- 放大圖容器 -->
+  <div class="lightbox" id="lightbox">
+    <img id="lightbox-img" src="" alt="">
+  </div>
+
+  <script>
+    const files = [
+	"screencapture-google-search-2025-09-04-11_03_10.png",
+	"screencapture-play-google-store-apps-details-2025-09-04-11_27_15.png",
+	"screencapture-play-google-store-apps-details-2025-09-04-11_38_53.png",
+    ];
+
+    const gallery = document.getElementById("gallery");
+    const lightbox = document.getElementById("lightbox");
+    const lightboxImg = document.getElementById("lightbox-img");
+
+    let scale = 1; // 縮放比例
+    let isDragging = false;
+    let startX, startY, translateX = 0, translateY = 0;
+
+    // 建立縮圖
+    files.forEach(file => {
+      const img = document.createElement("img");
+      img.src = file;
+      img.alt = file;
+      img.addEventListener("click", () => {
+        lightboxImg.src = file;
+        lightbox.style.display = "flex";
+        resetTransform();
+      });
+      gallery.appendChild(img);
+    });
+
+    // 點背景關閉
+    lightbox.addEventListener("click", (e) => {
+      if (e.target === lightbox) {
+        lightbox.style.display = "none";
+        lightboxImg.src = "";
+      }
+    });
+
+    // 滾輪縮放
+    lightbox.addEventListener("wheel", (e) => {
+      e.preventDefault();
+      if (e.deltaY < 0) {
+        scale *= 1.1; // 放大
+      } else {
+        scale /= 1.1; // 縮小
+      }
+      updateTransform();
+    });
+
+    // 拖曳移動
+    lightboxImg.addEventListener("mousedown", (e) => {
+      isDragging = true;
+      startX = e.clientX - translateX;
+      startY = e.clientY - translateY;
+      lightboxImg.style.cursor = "grabbing";
+    });
+
+    window.addEventListener("mousemove", (e) => {
+      if (!isDragging) return;
+      translateX = e.clientX - startX;
+      translateY = e.clientY - startY;
+      updateTransform();
+    });
+
+    window.addEventListener("mouseup", () => {
+      isDragging = false;
+      lightboxImg.style.cursor = "zoom-in";
+    });
+
+    // 重設縮放與位置
+    function resetTransform() {
+      scale = 1;
+      translateX = 0;
+      translateY = 0;
+      updateTransform();
+    }
+
+    function updateTransform() {
+      lightboxImg.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+    }
+  </script>
+</body>
+</html>
