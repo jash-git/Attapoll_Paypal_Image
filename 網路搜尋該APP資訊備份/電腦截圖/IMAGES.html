@@ -42,6 +42,28 @@
       transition: transform 0.2s;
       cursor: zoom-in;
     }
+
+    /* 關閉按鈕 */
+    .close-btn {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      width: 40px;
+      height: 40px;
+      background: rgba(255,255,255,0.8);
+      border-radius: 50%;
+      display: none; /* 初始隱藏 */
+      justify-content: center;
+      align-items: center;
+      font-size: 24px;
+      color: #333;
+      cursor: pointer;
+      z-index: 10000;
+      user-select: none;
+    }
+    .close-btn:hover {
+      background: rgba(255,255,255,1);
+    }
   </style>
 </head>
 <body>
@@ -53,16 +75,20 @@
     <img id="lightbox-img" src="" alt="">
   </div>
 
+  <!-- 固定關閉按鈕 -->
+  <div class="close-btn" id="closeBtn">&times;</div>
+
   <script>
     const files = [
-	"screencapture-google-search-2025-09-04-11_03_10.png",
-	"screencapture-play-google-store-apps-details-2025-09-04-11_27_15.png",
-	"screencapture-play-google-store-apps-details-2025-09-04-11_38_53.png",
+		"screencapture-google-search-2025-09-04-11_03_10.png",
+		"screencapture-play-google-store-apps-details-2025-09-04-11_27_15.png",
+		"screencapture-play-google-store-apps-details-2025-09-04-11_38_53.png",
     ];
 
     const gallery = document.getElementById("gallery");
     const lightbox = document.getElementById("lightbox");
     const lightboxImg = document.getElementById("lightbox-img");
+    const closeBtn = document.getElementById("closeBtn");
 
     let scale = 1; // 縮放比例
     let isDragging = false;
@@ -76,27 +102,34 @@
       img.addEventListener("click", () => {
         lightboxImg.src = file;
         lightbox.style.display = "flex";
+        closeBtn.style.display = "flex"; // 顯示關閉按鈕
         resetTransform();
       });
       gallery.appendChild(img);
     });
 
-    // 點背景關閉
-    lightbox.addEventListener("click", (e) => {
-      if (e.target === lightbox) {
-        lightbox.style.display = "none";
-        lightboxImg.src = "";
+    // 關閉按鈕點擊
+    closeBtn.addEventListener("click", closeLightbox);
+
+    // 按 ESC 關閉
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && lightbox.style.display === "flex") {
+        closeLightbox();
       }
     });
+
+    function closeLightbox() {
+      lightbox.style.display = "none";
+      lightboxImg.src = "";
+      closeBtn.style.display = "none";
+      resetTransform();
+    }
 
     // 滾輪縮放
     lightbox.addEventListener("wheel", (e) => {
       e.preventDefault();
-      if (e.deltaY < 0) {
-        scale *= 1.1; // 放大
-      } else {
-        scale /= 1.1; // 縮小
-      }
+      if (e.deltaY < 0) scale *= 1.1;
+      else scale /= 1.1;
       updateTransform();
     });
 
@@ -120,7 +153,6 @@
       lightboxImg.style.cursor = "zoom-in";
     });
 
-    // 重設縮放與位置
     function resetTransform() {
       scale = 1;
       translateX = 0;
