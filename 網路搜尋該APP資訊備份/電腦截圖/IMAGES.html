@@ -1,168 +1,193 @@
 <!doctype html>
 <html lang="zh-Hant">
-<head>
-  <meta charset="utf-8">
-  <title>靜態載入圖片清單</title>
-  <style>
-    body { font-family: sans-serif; margin:0; }
-    .gallery {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-      gap: 10px;
-      padding: 10px;
-    }
-    .gallery img {
-      width: 100%;
-      height: auto;
-      border-radius: 8px;
-      object-fit: cover;
-      cursor: pointer;
-      transition: transform 0.2s;
-    }
-    .gallery img:hover {
-      transform: scale(1.05);
-    }
+	<head>
+	  <meta charset="utf-8">
+	  <title>靜態載入圖片清單</title>
+	  <style>
+		body { font-family: sans-serif; margin:0; }
+		.gallery {
+		  display: grid;
+		  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+		  gap: 10px;
+		  padding: 10px;
+		}
+		.gallery img {
+		  width: 100%;
+		  height: auto;
+		  border-radius: 8px;
+		  object-fit: cover;
+		  cursor: pointer;
+		  transition: transform 0.2s;
+		}
+		.gallery img:hover {
+		  transform: scale(1.05);
+		}
 
-    /* 放大圖全螢幕樣式 */
-    .lightbox {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      display: none;
-      justify-content: center;
-      align-items: center;
-      background: rgba(0,0,0,0.8);
-      z-index: 9999;
-      overflow: hidden;
-    }
-    .lightbox img {
-      max-width: 90%;
-      max-height: 90%;
-      border-radius: 10px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.7);
-      transition: transform 0.2s;
-      cursor: zoom-in;
-    }
+		.lightbox {
+		  position: fixed;
+		  top: 0; left: 0; right: 0; bottom: 0;
+		  display: none;
+		  justify-content: center;
+		  align-items: center;
+		  background: rgba(0,0,0,0.8);
+		  z-index: 9999;
+		  overflow: hidden;
+		}
+		.lightbox img {
+		  max-width: 90%;
+		  max-height: 90%;
+		  border-radius: 10px;
+		  box-shadow: 0 0 20px rgba(0,0,0,0.7);
+		  transition: transform 0.1s;
+		  cursor: zoom-in;
+		}
 
-    /* 關閉按鈕 */
-    .close-btn {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      width: 40px;
-      height: 40px;
-      background: rgba(255,255,255,0.8);
-      border-radius: 50%;
-      display: none; /* 初始隱藏 */
-      justify-content: center;
-      align-items: center;
-      font-size: 24px;
-      color: #333;
-      cursor: pointer;
-      z-index: 10000;
-      user-select: none;
-    }
-    .close-btn:hover {
-      background: rgba(255,255,255,1);
-    }
-  </style>
-</head>
-<body>
-  <h1 style="padding:10px">圖片清單展示</h1>
-  <div class="gallery" id="gallery"></div>
+		.close-btn {
+		  position: fixed;
+		  top: 20px;
+		  right: 20px;
+		  width: 40px;
+		  height: 40px;
+		  background: rgba(255,255,255,0.8);
+		  border-radius: 50%;
+		  display: none;
+		  justify-content: center;
+		  align-items: center;
+		  font-size: 24px;
+		  color: #333;
+		  cursor: pointer;
+		  z-index: 10000;
+		  user-select: none;
+		}
+		.close-btn:hover {
+		  background: rgba(255,255,255,1);
+		}
+	  </style>
+	</head>
+	<body>
+		<h1 style="padding:10px">圖片清單展示</h1>
+		<div class="gallery" id="gallery"></div>
 
-  <!-- 放大圖容器 -->
-  <div class="lightbox" id="lightbox">
-    <img id="lightbox-img" src="" alt="">
-  </div>
+		<div class="lightbox" id="lightbox">
+		  <img id="lightbox-img" src="" alt="">
+		</div>
+		<div class="close-btn" id="closeBtn">&times;</div>
 
-  <!-- 固定關閉按鈕 -->
-  <div class="close-btn" id="closeBtn">&times;</div>
+		<script>
+			/*
+			滑鼠滾輪縮放 → 可放大/縮小圖片。
 
-  <script>
-    const files = [
-		"screencapture-google-search-2025-09-04-11_03_10.png",
-		"screencapture-play-google-store-apps-details-2025-09-04-11_27_15.png",
-		"screencapture-play-google-store-apps-details-2025-09-04-11_38_53.png",
-    ];
+			拖曳滑鼠 → 移動畫面。
 
-    const gallery = document.getElementById("gallery");
-    const lightbox = document.getElementById("lightbox");
-    const lightboxImg = document.getElementById("lightbox-img");
-    const closeBtn = document.getElementById("closeBtn");
+			方向鍵（上下左右） → 每次移動 30px，將畫面需要看的部分置中。
 
-    let scale = 1; // 縮放比例
-    let isDragging = false;
-    let startX, startY, translateX = 0, translateY = 0;
+			ESC 或右上角 × → 關閉放大圖。		
+			*/
+			const files = [
+			"screencapture-google-search-2025-09-04-11_03_10.png",
+			"screencapture-play-google-store-apps-details-2025-09-04-11_27_15.png",
+			"screencapture-play-google-store-apps-details-2025-09-04-11_38_53.png",
+			];
 
-    // 建立縮圖
-    files.forEach(file => {
-      const img = document.createElement("img");
-      img.src = file;
-      img.alt = file;
-      img.addEventListener("click", () => {
-        lightboxImg.src = file;
-        lightbox.style.display = "flex";
-        closeBtn.style.display = "flex"; // 顯示關閉按鈕
-        resetTransform();
-      });
-      gallery.appendChild(img);
-    });
+			const gallery = document.getElementById("gallery");
+			const lightbox = document.getElementById("lightbox");
+			const lightboxImg = document.getElementById("lightbox-img");
+			const closeBtn = document.getElementById("closeBtn");
 
-    // 關閉按鈕點擊
-    closeBtn.addEventListener("click", closeLightbox);
+			let scale = 1; // 縮放比例
+			let isDragging = false;
+			let startX, startY, translateX = 0, translateY = 0;
+			const moveStep = 30; // 每次按鍵移動距離（像素）
 
-    // 按 ESC 關閉
-    window.addEventListener("keydown", (e) => {
-      if (e.key === "Escape" && lightbox.style.display === "flex") {
-        closeLightbox();
-      }
-    });
+			// 建立縮圖
+			files.forEach(file => {
+			  const img = document.createElement("img");
+			  img.src = file;
+			  img.alt = file;
+			  img.addEventListener("click", () => {
+				lightboxImg.src = file;
+				lightbox.style.display = "flex";
+				closeBtn.style.display = "flex";
+				resetTransform();
+			  });
+			  gallery.appendChild(img);
+			});
 
-    function closeLightbox() {
-      lightbox.style.display = "none";
-      lightboxImg.src = "";
-      closeBtn.style.display = "none";
-      resetTransform();
-    }
+			// 關閉按鈕
+			closeBtn.addEventListener("click", closeLightbox);
 
-    // 滾輪縮放
-    lightbox.addEventListener("wheel", (e) => {
-      e.preventDefault();
-      if (e.deltaY < 0) scale *= 1.1;
-      else scale /= 1.1;
-      updateTransform();
-    });
+			// ESC 鍵關閉 + 方向鍵控制
+			window.addEventListener("keydown", (e) => {
+			  if (lightbox.style.display === "flex") {
+				switch(e.key){
+				  case "Escape":
+					closeLightbox();
+					break;
+				  case "ArrowUp":
+					translateY += moveStep;
+					updateTransform();
+					break;
+				  case "ArrowDown":
+					translateY -= moveStep;
+					updateTransform();
+					break;
+				  case "ArrowLeft":
+					translateX += moveStep;
+					updateTransform();
+					break;
+				  case "ArrowRight":
+					translateX -= moveStep;
+					updateTransform();
+					break;
+				}
+			  }
+			});
 
-    // 拖曳移動
-    lightboxImg.addEventListener("mousedown", (e) => {
-      isDragging = true;
-      startX = e.clientX - translateX;
-      startY = e.clientY - translateY;
-      lightboxImg.style.cursor = "grabbing";
-    });
+			function closeLightbox() {
+			  lightbox.style.display = "none";
+			  lightboxImg.src = "";
+			  closeBtn.style.display = "none";
+			  resetTransform();
+			}
 
-    window.addEventListener("mousemove", (e) => {
-      if (!isDragging) return;
-      translateX = e.clientX - startX;
-      translateY = e.clientY - startY;
-      updateTransform();
-    });
+			// 滾輪縮放
+			lightbox.addEventListener("wheel", (e) => {
+			  e.preventDefault();
+			  if (e.deltaY < 0) scale *= 1.1;
+			  else scale /= 1.1;
+			  updateTransform();
+			});
 
-    window.addEventListener("mouseup", () => {
-      isDragging = false;
-      lightboxImg.style.cursor = "zoom-in";
-    });
+			// 拖曳移動
+			lightboxImg.addEventListener("mousedown", (e) => {
+			  isDragging = true;
+			  startX = e.clientX - translateX;
+			  startY = e.clientY - translateY;
+			  lightboxImg.style.cursor = "grabbing";
+			});
 
-    function resetTransform() {
-      scale = 1;
-      translateX = 0;
-      translateY = 0;
-      updateTransform();
-    }
+			window.addEventListener("mousemove", (e) => {
+			  if (!isDragging) return;
+			  translateX = e.clientX - startX;
+			  translateY = e.clientY - startY;
+			  updateTransform();
+			});
 
-    function updateTransform() {
-      lightboxImg.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
-    }
-  </script>
-</body>
+			window.addEventListener("mouseup", () => {
+			  isDragging = false;
+			  lightboxImg.style.cursor = "zoom-in";
+			});
+
+			function resetTransform() {
+			  scale = 1;
+			  translateX = 0;
+			  translateY = 0;
+			  updateTransform();
+			}
+
+			function updateTransform() {
+			  lightboxImg.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+			}
+		</script>
+	</body>
 </html>
